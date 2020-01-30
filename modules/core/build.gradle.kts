@@ -59,6 +59,6 @@ dependencies {
   api("org.slf4j:slf4j-ext:1.7.25")
   api("org.slf4j:slf4j-log4j12:1.7.25")
   runtimeOnly("log4j:log4j:1.2.17")
-  testImplementation "junit:junit:4.12"
+  testImplementation("junit:junit:4.12")
 }
 
