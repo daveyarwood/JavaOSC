@@ -11,7 +11,7 @@ val sourcesJar by tasks.creating(Jar::class) {
 }
 
 group = "io.djy"
-version = "0.7-SNAPSHOT"
+version = "0.7"
 
 publishing {
   publications {
@@ -37,7 +37,7 @@ bintray {
     name = "javaosc"
     version.name = project.version.toString()
     vcsUrl = "https://github.com/daveyarwood/JavaOSC.git"
-    setLicenses("BSD-3")
+    setLicenses("BSD 3-Clause")
   }
 }
 
