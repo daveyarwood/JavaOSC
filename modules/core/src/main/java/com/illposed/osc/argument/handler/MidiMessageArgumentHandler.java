@@ -3,11 +3,13 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument.handler;
 
+import com.illposed.osc.BytesReceiver;
 import com.illposed.osc.argument.OSCMidiMessage;
 import com.illposed.osc.argument.ArgumentHandler;
 import java.nio.ByteBuffer;
@@ -63,7 +65,7 @@ public class MidiMessageArgumentHandler implements ArgumentHandler<OSCMidiMessag
 	}
 
 	@Override
-	public byte[] serialize(final OSCMidiMessage value) {
-		return value.toContentArray();
+	public void serialize(final BytesReceiver output, final OSCMidiMessage value) {
+		output.put(value.toContentArray());
 	}
 }

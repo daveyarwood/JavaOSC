@@ -3,11 +3,13 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument.handler;
 
+import com.illposed.osc.BytesReceiver;
 import com.illposed.osc.OSCParseException;
 import com.illposed.osc.OSCParser;
 import com.illposed.osc.OSCSerializer;
@@ -126,7 +128,10 @@ public class StringArgumentHandler implements ArgumentHandler<String>, Cloneable
 	}
 
 	@Override
-	public byte[] serialize(final String value) {
-		return OSCSerializer.terminatedAndAligned(value.getBytes(charset));
+	public void serialize(final BytesReceiver output, final String value) {
+
+		final byte[] stringBytes = value.getBytes(charset);
+		output.put(stringBytes);
+		OSCSerializer.terminateAndAlign(output);
 	}
 }

@@ -3,13 +3,16 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc;
 
 import com.illposed.osc.argument.OSCTimeTag64;
 import com.illposed.osc.argument.handler.StringArgumentHandler;
+
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +39,7 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 	@SuppressWarnings("WeakerAccess")
 	public static final int MAX_ARGUMENTS = 64;
 	private static final int DEFAULT_CORE_THREADS = 3;
+	private final BytesReceiver argumentTypesOutput;
 	private final OSCSerializer serializer;
 	private final Charset typeTagsCharset;
 	private final List<SelectiveMessageListener> selectiveMessageListeners;
@@ -105,11 +109,12 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 		NullOSCSerializer() {
 			super(
 					Collections.emptyList(),
-					Collections.emptyMap());
+					Collections.emptyMap(),
+					null);
 		}
 
 		@Override
-		public byte[] serializedTypeTags(final List<Object> arguments) {
+		public void writeOnlyTypeTags(final List<?> arguments) {
 			throw new IllegalStateException(
 					"You need to either dispatch only packets containing meta-info, "
 					+ "or supply a serialization factory to the dispatcher");
@@ -118,7 +123,7 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 
 	private static class NullOSCSerializerBuilder extends OSCSerializerAndParserBuilder {
 		@Override
-		public OSCSerializer buildSerializer() {
+		public OSCSerializer buildSerializer(final BytesReceiver output) {
 			return new NullOSCSerializer();
 		}
 	}
@@ -130,12 +135,16 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 			final ScheduledExecutorService dispatchScheduler)
 	{
 		final OSCSerializerAndParserBuilder nonNullSerializerBuilder;
+		final ByteBuffer argumentTypesBuffer;
 		if (serializerBuilder == null) {
+			argumentTypesBuffer = ByteBuffer.allocate(0);
 			nonNullSerializerBuilder = new NullOSCSerializerBuilder();
 		} else {
+			argumentTypesBuffer = ByteBuffer.allocate(MAX_ARGUMENTS);
 			nonNullSerializerBuilder = serializerBuilder;
 		}
-		this.serializer = nonNullSerializerBuilder.buildSerializer();
+		this.argumentTypesOutput = new BufferBytesReceiver(argumentTypesBuffer);
+		this.serializer = nonNullSerializerBuilder.buildSerializer(argumentTypesOutput);
 		final Map<String, Object> serializationProperties
 				= nonNullSerializerBuilder.getProperties();
 		final Charset propertiesCharset
@@ -267,7 +276,7 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 	/**
 	 * The work-horse of {@link #handlePacket(OSCPacketEvent)}.
 	 * @param source the origin of the packet, usually an instance of
-	 *   {@link com.illposed.osc.transport.OSCPortIn}
+	 *   {@link com.illposed.osc.transport.udp.OSCPortIn}
 	 * @param packet to be dispatched
 	 * @param timeStamp the associated time-stamp
 	 */
@@ -320,7 +329,7 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 	 * depending on whether it has an associated {@link OSCBundle#getTimestamp() time-stamp},
 	 * and whether we are {@link #isAlwaysDispatchingImmediately() always dispatching immediately}.
 	 * @param source the origin of the packet, usually an instance of
-	 *   {@link com.illposed.osc.transport.OSCPortIn}
+	 *   {@link com.illposed.osc.transport.udp.OSCPortIn}
 	 * @param bundle the bundle to be dispatched
 	 */
 	private void dispatchBundle(final Object source, final OSCBundle bundle) {
@@ -346,7 +355,7 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 	 * depending on whether they have an associated {@link OSCBundle#getTimestamp() time-stamp},
 	 * and whether we are {@link #isAlwaysDispatchingImmediately() always dispatching immediately}.
 	 * @param source the origin of the packet, usually an instance of
-	 *   {@link com.illposed.osc.transport.OSCPortIn}
+	 *   {@link com.illposed.osc.transport.udp.OSCPortIn}
 	 * @param bundle the bundle to be dispatched immediately
 	 */
 	private void dispatchBundleNow(final Object source, final OSCBundle bundle) {
@@ -357,15 +366,17 @@ public class OSCPacketDispatcher implements OSCPacketListener {
 		}
 	}
 
-	private CharSequence generateTypeTagsString(final List<Object> arguments) {
+	private CharSequence generateTypeTagsString(final List<?> arguments) {
+
 		try {
-			byte[] bytes = serializer.serializedTypeTags(arguments);
-			return new String(bytes, typeTagsCharset);
+			serializer.writeOnlyTypeTags(arguments);
 		} catch (final OSCSerializeException ex) {
 			throw new IllegalArgumentException(
 					"Failed generating Arguments Type Tag string while dispatching",
 					ex);
 		}
+
+		return new String(argumentTypesOutput.toByteArray(), typeTagsCharset);
 	}
 
 	private void ensureMetaInfo(final OSCMessage message) {

@@ -3,11 +3,13 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument.handler;
 
+import com.illposed.osc.BytesReceiver;
 import com.illposed.osc.argument.ArgumentHandler;
 import com.illposed.osc.argument.OSCColor;
 
@@ -64,12 +66,11 @@ public class ColorArgumentHandler implements ArgumentHandler<OSCColor>, Cloneabl
 	}
 
 	@Override
-	public byte[] serialize(final OSCColor value) {
-		return new byte[]{
-			value.getRed(),
-			value.getGreen(),
-			value.getBlue(),
-			value.getAlpha()
-		};
+	public void serialize(final BytesReceiver output, final OSCColor value) {
+
+		output.put(value.getRed());
+		output.put(value.getGreen());
+		output.put(value.getBlue());
+		output.put(value.getAlpha());
 	}
 }

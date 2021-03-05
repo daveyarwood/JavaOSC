@@ -3,7 +3,8 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc;
@@ -38,7 +39,8 @@ public class OSCSerializerAndParserBuilder {
 		return Collections.unmodifiableMap(identifierToType);
 	}
 
-	public OSCSerializer buildSerializer() {
+	public OSCSerializer buildSerializer(final BytesReceiver output) {
+
 		final Map<String, Object> currentProperties = getProperties();
 		final List<ArgumentHandler> typeCopies
 				= new ArrayList<>(identifierToType.size());
@@ -59,7 +61,7 @@ public class OSCSerializerAndParserBuilder {
 			typeCopies.addAll(defaultParserTypes);
 		}
 
-		return new OSCSerializer(typeCopies, currentProperties);
+		return new OSCSerializer(typeCopies, currentProperties, output);
 	}
 
 	public OSCParser buildParser() {

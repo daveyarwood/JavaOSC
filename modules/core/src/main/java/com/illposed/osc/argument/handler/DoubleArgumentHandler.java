@@ -3,11 +3,13 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument.handler;
 
+import com.illposed.osc.BytesReceiver;
 import com.illposed.osc.OSCParseException;
 import com.illposed.osc.OSCSerializeException;
 import com.illposed.osc.argument.ArgumentHandler;
@@ -60,7 +62,7 @@ public class DoubleArgumentHandler implements ArgumentHandler<Double>, Cloneable
 	}
 
 	@Override
-	public byte[] serialize(final Double value) throws OSCSerializeException {
-		return LongArgumentHandler.INSTANCE.serialize(Double.doubleToRawLongBits(value));
+	public void serialize(final BytesReceiver output, final Double value) throws OSCSerializeException {
+		LongArgumentHandler.INSTANCE.serialize(output, Double.doubleToRawLongBits(value));
 	}
 }

@@ -3,11 +3,13 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument.handler;
 
+import com.illposed.osc.BufferBytesReceiver;
 import com.illposed.osc.OSCParseException;
 import com.illposed.osc.OSCSerializeException;
 import com.illposed.osc.argument.ArgumentHandler;
@@ -30,12 +32,13 @@ public class ColorArgumentHandlerTest {
 			throws OSCSerializeException, OSCParseException
 	{
 		// serialize
-		final byte[] packetBytes = type.serialize(orig);
+		final ByteBuffer buffer = ByteBuffer.allocate(bufferSize);
+		final BufferBytesReceiver bytesReceiver = new BufferBytesReceiver(buffer);
+		type.serialize(bytesReceiver, orig);
+		final ByteBuffer reparsableBuffer = (ByteBuffer) buffer.flip();
 
 		// re-parse
-		final ByteBuffer buffer = ByteBuffer.wrap(packetBytes);
-		buffer.rewind();
-		return type.parse(buffer);
+		return type.parse(reparsableBuffer);
 	}
 
 	private static OSCColor reparse(final OSCColor orig)

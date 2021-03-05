@@ -3,15 +3,15 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.transport.udp;
 
+import com.illposed.osc.LibraryInfo;
 import com.illposed.osc.OSCPacket;
 import com.illposed.osc.OSCParseException;
-import com.illposed.osc.OSCParser;
-import com.illposed.osc.OSCSerializer;
 import com.illposed.osc.OSCSerializerAndParserBuilder;
 import com.illposed.osc.OSCSerializeException;
 import com.illposed.osc.transport.Transport;
@@ -31,11 +31,12 @@ import java.nio.channels.DatagramChannel;
  * a network via UDP.
  */
 public class UDPTransport implements Transport {
+
 	/**
-		* Buffers were 1500 bytes in size, but were increased to 1536, as this
-		* is a common MTU, and then increased to 65507, as this is the maximum
-		* incoming datagram data size.
-		*/
+	 * Buffers were 1500 bytes in size, but were increased to 1536, as this
+	 * is a common MTU, and then increased to 65507, as this is the maximum
+	 * incoming datagram data size.
+	 */
 	public static final int BUFFER_SIZE = 65507;
 	private final ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
 
@@ -52,26 +53,16 @@ public class UDPTransport implements Transport {
 		this(local, remote, new OSCSerializerAndParserBuilder());
 	}
 
-	private UDPTransport(
-		final SocketAddress local,
-		final SocketAddress remote,
-		final OSCSerializerAndParserBuilder builder)
-		throws IOException
-	{
-		this(local, remote, builder.buildParser(), builder.buildSerializer());
-	}
-
 	public UDPTransport(
-		final SocketAddress local,
-		final SocketAddress remote,
-		final OSCParser parser,
-		final OSCSerializer serializer)
-		throws IOException
+			final SocketAddress local,
+			final SocketAddress remote,
+			final OSCSerializerAndParserBuilder serializerAndParserBuilder)
+			throws IOException
 	{
 		this.local = local;
 		this.remote = remote;
 		final DatagramChannel tmpChannel;
-		if (local instanceof InetSocketAddress) {
+		if ((local instanceof InetSocketAddress) && LibraryInfo.hasStandardProtocolFamily()) {
 			final InetSocketAddress localIsa = (InetSocketAddress) local;
 			final InetSocketAddress remoteIsa = (InetSocketAddress) remote;
 			final Class<?> localClass = localIsa.getAddress().getClass();
@@ -95,12 +86,21 @@ public class UDPTransport implements Transport {
 			tmpChannel = DatagramChannel.open();
 		}
 		this.channel = tmpChannel;
-
-		this.channel.setOption(StandardSocketOptions.SO_SNDBUF, BUFFER_SIZE);
-		this.channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-		this.channel.setOption(StandardSocketOptions.SO_BROADCAST, true);
+		if (LibraryInfo.hasStandardProtocolFamily()) {
+			this.channel.setOption(StandardSocketOptions.SO_SNDBUF, BUFFER_SIZE);
+			// NOTE So far, we never saw an issue with the receive-buffer size,
+			//      thus we leave it at its default.
+			this.channel.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+			this.channel.setOption(StandardSocketOptions.SO_BROADCAST, true);
+		} else {
+			this.channel.socket().setSendBufferSize(BUFFER_SIZE);
+			// NOTE So far, we never saw an issue with the receive-buffer size,
+			//      thus we leave it at its default.
+			this.channel.socket().setReuseAddress(true);
+			this.channel.socket().setBroadcast(true);
+		}
 		this.channel.socket().bind(local);
-		this.oscChannel = new OSCDatagramChannel(channel, parser, serializer);
+		this.oscChannel = new OSCDatagramChannel(channel, serializerAndParserBuilder);
 	}
 
 	@Override
@@ -124,10 +124,10 @@ public class UDPTransport implements Transport {
 	}
 
 	/**
-		* Close the socket and free-up resources.
-		* It is recommended that clients call this when they are done with the port.
-		* @throws IOException If an I/O error occurs on the channel
-		*/
+	 * Close the socket and free-up resources.
+	 * It is recommended that clients call this when they are done with the port.
+	 * @throws IOException If an I/O error occurs on the channel
+	 */
 	@Override
 	public void close() throws IOException {
 		channel.close();
@@ -135,7 +135,7 @@ public class UDPTransport implements Transport {
 
 	@Override
 	public void send(final OSCPacket packet) throws IOException, OSCSerializeException {
-		oscChannel.send(packet, remote);
+		oscChannel.send(buffer, packet, remote);
 	}
 
 	@Override

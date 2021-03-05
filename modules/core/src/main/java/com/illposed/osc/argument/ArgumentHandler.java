@@ -3,11 +3,13 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument;
 
+import com.illposed.osc.BytesReceiver;
 import com.illposed.osc.OSCParseException;
 import com.illposed.osc.OSCSerializeException;
 import java.nio.ByteBuffer;
@@ -84,11 +86,10 @@ public interface ArgumentHandler<T> extends Cloneable {
 
 	/**
 	 * Converts from a Java objects to the OSC byte representation.
-	 * @param value the Java value to be serialized into its OSC byte
-	 * representation
-	 * @return the byte representation of the object, as a byte array
+	 * @param output where the OSC byte representation of value has to be written to
+	 * @param value the Java value to be serialized into its OSC byte representation
 	 * @throws OSCSerializeException if anything went wrong while serializing,
 	 *   for example an invalid value was given
 	 */
-	byte[] serialize(T value) throws OSCSerializeException;
+	void serialize(BytesReceiver output, T value) throws OSCSerializeException;
 }

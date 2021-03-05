@@ -3,7 +3,8 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.transport;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OSCPortInBuilder {
+
 	private OSCSerializerAndParserBuilder parserBuilder;
 	private List<OSCPacketListener> packetListeners;
 	private SocketAddress local;

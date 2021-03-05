@@ -3,15 +3,14 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.transport;
 
 import com.illposed.osc.transport.udp.UDPTransport;
 import com.illposed.osc.transport.tcp.TCPTransport;
-import com.illposed.osc.OSCParser;
-import com.illposed.osc.OSCSerializer;
 import com.illposed.osc.OSCSerializerAndParserBuilder;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -27,14 +26,11 @@ import java.net.UnknownHostException;
  * To listen for OSC messages, use {@link OSCPortIn}.
  */
 public class OSCPort {
-	private final Transport transport;
-
-	public Transport getTransport() {
-		return transport;
-	}
 
 	public static final int DEFAULT_SC_OSC_PORT = 57110;
 	public static final int DEFAULT_SC_LANG_OSC_PORT = 57120;
+
+	private final Transport transport;
 
 	protected OSCPort(
 		final SocketAddress local,
@@ -43,16 +39,13 @@ public class OSCPort {
 		final NetworkProtocol protocol)
 		throws IOException
 	{
-		OSCParser parser = serializerAndParserBuilder.buildParser();
-		OSCSerializer serializer = serializerAndParserBuilder.buildSerializer();
-
 		switch (protocol) {
 			case UDP:
-				this.transport = new UDPTransport(local, remote, parser, serializer);
+				this.transport = new UDPTransport(local, remote, serializerAndParserBuilder);
 				break;
 			case TCP:
-				if (!(local instanceof InetSocketAddress
-							&& remote instanceof InetSocketAddress))
+				if (!((local instanceof InetSocketAddress)
+							&& (remote instanceof InetSocketAddress)))
 				{
 					throw new IllegalArgumentException(
 						"Only InetSocketAddress is supported for TCP transport."
@@ -62,8 +55,7 @@ public class OSCPort {
 				this.transport = new TCPTransport(
 					(InetSocketAddress)local,
 					(InetSocketAddress)remote,
-					parser,
-					serializer
+					serializerAndParserBuilder
 				);
 				break;
 			default:
@@ -80,6 +72,10 @@ public class OSCPort {
 		throws IOException
 	{
 		this(local, remote, serializerAndParserBuilder, NetworkProtocol.UDP);
+	}
+
+	public Transport getTransport() {
+		return transport;
 	}
 
 	/**

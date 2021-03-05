@@ -3,11 +3,13 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument.handler;
 
+import com.illposed.osc.BytesReceiver;
 import com.illposed.osc.argument.OSCTimeTag64;
 import com.illposed.osc.OSCParseException;
 import com.illposed.osc.OSCSerializeException;
@@ -87,7 +89,7 @@ public class DateTimeStampArgumentHandler implements ArgumentHandler<Date>, Clon
 	}
 
 	@Override
-	public byte[] serialize(final Date value) throws OSCSerializeException {
-		return TimeTag64ArgumentHandler.INSTANCE.serialize(OSCTimeTag64.valueOf(value));
+	public void serialize(final BytesReceiver output, final Date value) throws OSCSerializeException {
+		TimeTag64ArgumentHandler.INSTANCE.serialize(output, OSCTimeTag64.valueOf(value));
 	}
 }

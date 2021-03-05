@@ -3,11 +3,13 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument.handler;
 
+import com.illposed.osc.BytesReceiver;
 import com.illposed.osc.argument.OSCUnsigned;
 import com.illposed.osc.argument.ArgumentHandler;
 import java.nio.ByteBuffer;
@@ -69,13 +71,12 @@ public class UnsignedIntegerArgumentHandler implements ArgumentHandler<OSCUnsign
 	}
 
 	@Override
-	public byte[] serialize(final OSCUnsigned value) {
+	public void serialize(final BytesReceiver output, final OSCUnsigned value) {
+
 		final long asLong = value.toLong();
-		return new byte[]{
-			(byte) (asLong >> 24 & 0xFFL),
-			(byte) (asLong >> 16 & 0xFFL),
-			(byte) (asLong >>  8 & 0xFFL),
-			(byte) (asLong       & 0xFFL)
-		};
+		output.put((byte) (asLong >> 24 & 0xFFL));
+		output.put((byte) (asLong >> 16 & 0xFFL));
+		output.put((byte) (asLong >>  8 & 0xFFL));
+		output.put((byte) (asLong       & 0xFFL));
 	}
 }

@@ -3,7 +3,8 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc;
@@ -108,15 +109,21 @@ public class OSCMessageTest {
 		return javaCode.toString();
 	}
 
-	private final OSCSerializer serializer =
-		new OSCSerializerAndParserBuilder().buildSerializer();
+	private BytesReceiver convertMessageToBytes(final OSCMessage message) {
 
-	private byte[] convertMessageToByteArray(final OSCMessage message) {
+		final ByteBuffer buffer = ByteBuffer.allocate(1024);
+		final BytesReceiver bytesReceiver = new BufferBytesReceiver(buffer);
+		final OSCSerializer stream = new OSCSerializerAndParserBuilder().buildSerializer(bytesReceiver);
 		try {
-			return serializer.serialize(message);
+			stream.write(message);
 		} catch (final OSCSerializeException ex) {
 			throw new RuntimeException(ex);
 		}
+		return bytesReceiver;
+	}
+
+	private byte[] convertMessageToByteArray(final OSCMessage message) {
+		return convertMessageToBytes(message).toByteArray();
 	}
 
 	@Test

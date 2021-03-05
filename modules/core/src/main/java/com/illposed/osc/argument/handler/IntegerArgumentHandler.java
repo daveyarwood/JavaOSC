@@ -3,13 +3,14 @@
  * All rights reserved.
  *
  * This code is licensed under the BSD 3-Clause license.
- * See file LICENSE (or LICENSE.html) for more information.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * See file LICENSE.md for more information.
  */
 
 package com.illposed.osc.argument.handler;
 
+import com.illposed.osc.BytesReceiver;
 import com.illposed.osc.argument.ArgumentHandler;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
@@ -63,12 +64,13 @@ public class IntegerArgumentHandler implements ArgumentHandler<Integer>, Cloneab
 	public Integer parse(final ByteBuffer input) {
 
 		final Integer value = input.asIntBuffer().get();
-		((Buffer)input).position(input.position() + BYTES);
+		input.position(input.position() + BYTES);
 		return value;
 	}
 
 	@Override
-	public byte[] serialize(final Integer value) {
+	public void serialize(final BytesReceiver output, final Integer value) {
+
 		int curValue = value;
 		final byte[] intBytes = new byte[4];
 		intBytes[3] = (byte)curValue; curValue >>>= 8;
@@ -76,6 +78,6 @@ public class IntegerArgumentHandler implements ArgumentHandler<Integer>, Cloneab
 		intBytes[1] = (byte)curValue; curValue >>>= 8;
 		intBytes[0] = (byte)curValue;
 
-		return intBytes;
+		output.put(intBytes);
 	}
 }
