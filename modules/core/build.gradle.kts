@@ -2,7 +2,6 @@ plugins {
   `java-library`
   `maven`
   `maven-publish`
-  id("com.jfrog.bintray") version "1.8.4"
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
@@ -22,22 +21,16 @@ publishing {
       artifact(sourcesJar)
     }
   }
-}
 
-// To deploy, have environment variables set up and run `gradle bintrayUpload`
-bintray {
-  user = System.getenv("BINTRAY_USER")
-  key = System.getenv("BINTRAY_KEY")
-
-  setPublications("MyPublication")
-  publish = true
-
-  with(pkg) {
-    repo = "maven"
-    name = "javaosc"
-    version.name = project.version.toString()
-    vcsUrl = "https://github.com/daveyarwood/JavaOSC.git"
-    setLicenses("BSD 3-Clause")
+  repositories {
+    maven {
+      name = "clojars"
+      url = "https://repo.clojars.org"
+      credentials {
+        username = System.env("CLOJARS_USER")
+        password = System.env("CLOJARS_PASSWORD")
+      }
+    }
   }
 }
 
