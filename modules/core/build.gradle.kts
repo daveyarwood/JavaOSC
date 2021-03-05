@@ -11,7 +11,7 @@ val sourcesJar by tasks.creating(Jar::class) {
 }
 
 group = "io.djy"
-version = "0.7"
+version = "0.8"
 
 publishing {
   publications {
