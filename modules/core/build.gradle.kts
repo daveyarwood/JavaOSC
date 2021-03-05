@@ -12,15 +12,6 @@ group = "io.djy"
 version = "0.8"
 
 publishing {
-  publications {
-    register("MyPublication", MavenPublication::class) {
-      from(components["java"])
-      groupId = "io.djy"
-      artifactId = "javaosc"
-      artifact(sourcesJar)
-    }
-  }
-
   repositories {
     maven {
       name = "clojars"
